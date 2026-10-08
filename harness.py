@@ -1,21 +1,26 @@
+class modelFailure(Exception):
+    """Trigger when model needs to evolve"""
+
+
 class evoHarness:
     def __init__(self):
         self.needToEvolve = False
 
-    def run():
-        pass
+    def run(self):
+        try:
+            #MAIN MODEL HERE
+            raise modelFailure()
+        except modelFailure:
+            self.needToEvolve = True
 
-    def evolve():
-        pass
+            return False
 
-    def implimentEvo():
+    def evolve(self):
+        if self.needToEvolve:
+            pass
+
+    def benchmark():
         pass
 
     def regress():
         pass
-
-
-def __main__():
-    model = evoHarness()
-
-    model.run()

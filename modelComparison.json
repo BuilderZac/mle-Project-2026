@@ -1,0 +1,95 @@
+{
+  "benchmarkEpisodes": 100,
+  "evalBaseSeed": 1000,
+  "baselineFloor": {
+    "model_name": "RandomBaselineModel",
+    "num_episodes": 100,
+    "mean_score": 426.19,
+    "median_score": 280.83,
+    "std_score": 369.89,
+    "min_score": 102.51,
+    "max_score": 1623.22,
+    "mean_distance": 1582.77,
+    "mean_steps": 251.85,
+    "mean_max_difficulty": 4.589,
+    "max_difficulty_reached": 10.263,
+    "mean_obstacles_cleared": 0.91,
+    "death_counts": {
+      "hit_spike": 45,
+      "crashed_into_platform_wall": 28,
+      "hit_overhead": 23,
+      "hit_saw": 2,
+      "fell_in_pit": 2
+    }
+  },
+  "models": {
+    "GeneticLinearModel": {
+      "model_name": "GeneticLinearModel",
+      "num_episodes": 100,
+      "mean_score": 639.07,
+      "median_score": 465.15,
+      "std_score": 492.9,
+      "min_score": 109.49,
+      "max_score": 2287.94,
+      "mean_distance": 2119.08,
+      "mean_steps": 321.06,
+      "mean_max_difficulty": 5.82,
+      "max_difficulty_reached": 12.336,
+      "mean_obstacles_cleared": 1.64,
+      "death_counts": {
+        "hit_spike": 46,
+        "crashed_into_platform_wall": 22,
+        "hit_overhead": 27,
+        "hit_saw": 5
+      },
+      "improvementOverFloorPct": 49.95,
+      "trainingTimeSec": 25.76
+    },
+    "QLearningModel": {
+      "model_name": "QLearningModel",
+      "num_episodes": 100,
+      "mean_score": 1295.27,
+      "median_score": 1214.78,
+      "std_score": 508.36,
+      "min_score": 373.37,
+      "max_score": 2741.39,
+      "mean_distance": 3463.68,
+      "mean_steps": 484.74,
+      "mean_max_difficulty": 8.915,
+      "max_difficulty_reached": 14.511,
+      "mean_obstacles_cleared": 3.91,
+      "death_counts": {
+        "fell_in_pit": 14,
+        "crashed_into_platform_wall": 36,
+        "hit_overhead": 33,
+        "hit_saw": 7,
+        "hit_spike": 10
+      },
+      "improvementOverFloorPct": 203.92,
+      "trainingTimeSec": 1.82
+    },
+    "NeuroEvolutionMLPModel": {
+      "model_name": "NeuroEvolutionMLPModel",
+      "num_episodes": 100,
+      "mean_score": 694.86,
+      "median_score": 556.59,
+      "std_score": 567.96,
+      "min_score": 146.81,
+      "max_score": 2592.59,
+      "mean_distance": 2229.27,
+      "mean_steps": 333.07,
+      "mean_max_difficulty": 6.075,
+      "max_difficulty_reached": 12.36,
+      "mean_obstacles_cleared": 1.68,
+      "death_counts": {
+        "hit_spike": 46,
+        "fell_in_pit": 3,
+        "crashed_into_platform_wall": 21,
+        "hit_overhead": 24,
+        "hit_saw": 6
+      },
+      "improvementOverFloorPct": 63.04,
+      "trainingTimeSec": 54.45
+    }
+  }
+}

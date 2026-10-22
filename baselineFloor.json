@@ -1,0 +1,20 @@
+{
+  "model_name": "RandomBaselineModel",
+  "num_episodes": 50,
+  "mean_score": 405.18,
+  "median_score": 361.74,
+  "std_score": 267.35,
+  "min_score": 108.32,
+  "max_score": 1192.36,
+  "mean_distance": 1619.11,
+  "mean_steps": 259.18,
+  "mean_max_difficulty": 4.671,
+  "max_difficulty_reached": 9.294,
+  "mean_obstacles_cleared": 0.78,
+  "death_counts": {
+    "hit_spike": 22,
+    "crashed_into_platform_wall": 14,
+    "hit_overhead": 13,
+    "hit_saw": 1
+  }
+}

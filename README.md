@@ -1,7 +1,7 @@
 # mle-Project-2026: Production Model Evolution Based Replacement
 
 ## Project Overview
-As outlined in [`Group_Assignment_1 (1) (1).pdf`](Group_Assignment_1%20(1)%20(1).pdf), models deployed in production can degrade or fail over time as project goals shift or environmental complexity increases. When zero downtime is required, a failing production model must be automatically mutated, benchmarked against the current baseline/production standard, rolled back (`regress`) if worse, or promoted to production if better.
+As outlined in [`Group_Assignment_1.pdf`](Group_Assignment_1.pdf), models deployed in production can degrade or fail over time as project goals shift or environmental complexity increases. When zero downtime is required, a failing production model must be automatically mutated, benchmarked against the current baseline/production standard, rolled back (`regress`) if worse, or promoted to production if better.
 
 This repository implements the proof-of-concept environment, baseline model floor, three distinct trained models, and the evolutionary replacement harness:
 1. **`game.py` — 2D Sidescroller Platformer with Infinitely Scaling Difficulty**:

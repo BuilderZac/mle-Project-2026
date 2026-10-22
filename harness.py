@@ -33,43 +33,43 @@ class modelFailure(Exception):
 class evoHarness:
     def __init__(
         self,
-        benchmark_episodes: int = 30,
-        max_evolutions: int = 5,
-        max_attempts_per_evolution: int = 25,
+        benchmarkEpisodes: int = 30,
+        maxEvolutions: int = 5,
+        maxAttemptsPerEvolution: int = 25,
         seed: int = 42,
     ):
         self.needToEvolve = False
         self.seed = seed
-        self.benchmark_episodes = benchmark_episodes
-        self.max_evolutions = max_evolutions
-        self.max_attempts_per_evolution = max_attempts_per_evolution
-        self.evolutions_completed = 0
-        self.total_rollbacks = 0
-        self.mutation_attempt = 0
-        self.attempts_in_current_cycle = 0
+        self.benchmarkEpisodes = benchmarkEpisodes
+        self.maxEvolutions = maxEvolutions
+        self.maxAttemptsPerEvolution = maxAttemptsPerEvolution
+        self.evolutionsCompleted = 0
+        self.totalRollbacks = 0
+        self.mutationAttempt = 0
+        self.attemptsInCurrentCycle = 0
 
         # 1. Establish the Random Baseline Model floor first
-        self.baseline_model = RandomBaselineModel(seed=seed)
-        self.baseline_summary: BenchmarkSummary = run_baseline_benchmark(
-            num_episodes=benchmark_episodes,
+        self.baselineModel = RandomBaselineModel(seed=seed)
+        self.baselineSummary: BenchmarkSummary = run_baseline_benchmark(
+            num_episodes=benchmarkEpisodes,
             base_seed=1000,
-            save_path="baseline_floor.json",
+            save_path="baselineFloor.json",
         )
-        self.baseline_floor_score: float = self.baseline_summary.mean_score
+        self.baselineFloorScore: float = self.baselineSummary.mean_score
 
         # Start production with the Random Baseline Model as the initial floor
-        self.production_model: BaseModel = self.baseline_model
-        self.backup_model: BaseModel = self.production_model.clone()
-        self.candidate_model: Optional[BaseModel] = None
+        self.productionModel: BaseModel = self.baselineModel
+        self.backupModel: BaseModel = self.productionModel.clone()
+        self.candidateModel: Optional[BaseModel] = None
 
-        self.best_benchmark_score: float = self.baseline_floor_score
+        self.bestBenchmarkScore: float = self.baselineFloorScore
         self.history: List[dict] = [
             {
                 "stage": "baseline_floor",
-                "model": self.baseline_model.name,
-                "mean_score": self.baseline_summary.mean_score,
-                "mean_distance": self.baseline_summary.mean_distance,
-                "mean_difficulty": self.baseline_summary.mean_max_difficulty,
+                "model": self.baselineModel.name,
+                "mean_score": self.baselineSummary.mean_score,
+                "mean_distance": self.baselineSummary.mean_distance,
+                "mean_difficulty": self.baselineSummary.mean_max_difficulty,
             }
         ]
 
@@ -81,27 +81,27 @@ class evoHarness:
         `max_evolutions` improvements have been completed.
         """
         try:
-            game = SidescrollerGame(seed=self.seed + self.evolutions_completed)
+            game = SidescrollerGame(seed=self.seed + self.evolutionsCompleted)
             state = game.reset()
             while not game.done:
-                action = self.production_model.select_action(state)
+                action = self.productionModel.select_action(state)
                 state, _, _, info = game.step(action)
 
             print(
-                f"[PRODUCTION RUN] Model={self.production_model.name} | "
-                f"Score={info['score']:.2f} (Floor={self.baseline_floor_score:.2f}) | "
+                f"[PRODUCTION RUN] Model={self.productionModel.name} | "
+                f"Score={info['score']:.2f} (Floor={self.baselineFloorScore:.2f}) | "
                 f"Distance={info['distance']:.1f} | "
                 f"MaxDifficulty={info['difficulty']:.2f}x | "
                 f"Outcome={info['death_reason']}"
             )
 
             # Stop evolving once we have completed the target number of evolutionary upgrades
-            if self.evolutions_completed >= self.max_evolutions:
+            if self.evolutionsCompleted >= self.maxEvolutions:
                 return True
 
             # Trigger modelFailure when the model dies in the infinitely scaling game
             raise modelFailure(
-                f"Model {self.production_model.name} failed at difficulty {info['difficulty']}x "
+                f"Model {self.productionModel.name} failed at difficulty {info['difficulty']}x "
                 f"({info['death_reason']})"
             )
         except modelFailure as exc:
@@ -112,30 +112,30 @@ class evoHarness:
     def evolve(self) -> None:
         """Mutate the current model to create a candidate replacement."""
         if self.needToEvolve:
-            self.mutation_attempt += 1
-            self.attempts_in_current_cycle += 1
-            self.backup_model = self.production_model.clone()
+            self.mutationAttempt += 1
+            self.attemptsInCurrentCycle += 1
+            self.backupModel = self.productionModel.clone()
 
             # Use a unique seed per mutation attempt so rollbacks via regress()
             # never replay the same RNG sequence.
-            attempt_seed = self.seed + self.mutation_attempt * 1009
+            attemptSeed = self.seed + self.mutationAttempt * 1009
 
             # If production is still the non-parameterized RandomBaselineModel,
             # initialize an EvolvableLinearModel candidate to evolve beyond the random floor.
-            if isinstance(self.production_model, RandomBaselineModel):
+            if isinstance(self.productionModel, RandomBaselineModel):
                 candidate = EvolvableLinearModel(
-                    seed=attempt_seed,
+                    seed=attemptSeed,
                     generation=1,
                 )
             else:
-                candidate = self.production_model.clone()
+                candidate = self.productionModel.clone()
                 candidate.mutate(
                     mutation_rate=0.35,
                     mutation_scale=0.65,
-                    seed=attempt_seed,
+                    seed=attemptSeed,
                 )
 
-            self.candidate_model = candidate
+            self.candidateModel = candidate
 
     def benchmark(self) -> bool:
         """
@@ -144,32 +144,32 @@ class evoHarness:
         Returns True and promotes the candidate if it improves performance;
         returns False to trigger `regress()` if it performs worse.
         """
-        if self.candidate_model is None:
+        if self.candidateModel is None:
             return False
 
         summary = evaluate_model(
-            self.candidate_model,
-            num_episodes=self.benchmark_episodes,
+            self.candidateModel,
+            num_episodes=self.benchmarkEpisodes,
             base_seed=1000,
         )
-        candidate_score = summary.mean_score
-        delta_vs_floor = candidate_score - self.baseline_floor_score
+        candidateScore = summary.mean_score
+        deltaVsFloor = candidateScore - self.baselineFloorScore
 
-        if candidate_score > self.best_benchmark_score:
+        if candidateScore > self.bestBenchmarkScore:
             print(
-                f"  [BENCHMARK PASS] {self.candidate_model.name} mean_score={candidate_score:.2f} "
-                f"beats previous best={self.best_benchmark_score:.2f} "
-                f"(+{delta_vs_floor:.2f} vs Random Floor {self.baseline_floor_score:.2f})"
+                f"  [BENCHMARK PASS] {self.candidateModel.name} mean_score={candidateScore:.2f} "
+                f"beats previous best={self.bestBenchmarkScore:.2f} "
+                f"(+{deltaVsFloor:.2f} vs Random Floor {self.baselineFloorScore:.2f})"
             )
-            self.production_model = self.candidate_model
-            self.best_benchmark_score = candidate_score
+            self.productionModel = self.candidateModel
+            self.bestBenchmarkScore = candidateScore
             self.needToEvolve = False
-            self.attempts_in_current_cycle = 0
-            self.evolutions_completed += 1
+            self.attemptsInCurrentCycle = 0
+            self.evolutionsCompleted += 1
             self.history.append(
                 {
-                    "stage": f"evolution_{self.evolutions_completed}",
-                    "model": self.production_model.name,
+                    "stage": f"evolution_{self.evolutionsCompleted}",
+                    "model": self.productionModel.name,
                     "mean_score": summary.mean_score,
                     "mean_distance": summary.mean_distance,
                     "mean_difficulty": summary.mean_max_difficulty,
@@ -178,26 +178,26 @@ class evoHarness:
             return True
 
         print(
-            f"  [BENCHMARK FAIL] {self.candidate_model.name} mean_score={candidate_score:.2f} "
-            f"<= current best={self.best_benchmark_score:.2f} -> rolling back (regress)"
+            f"  [BENCHMARK FAIL] {self.candidateModel.name} mean_score={candidateScore:.2f} "
+            f"<= current best={self.bestBenchmarkScore:.2f} -> rolling back (regress)"
         )
 
         # Safeguard against unbounded rejection loops when near a local optimum
-        if self.attempts_in_current_cycle >= self.max_attempts_per_evolution:
+        if self.attemptsInCurrentCycle >= self.maxAttemptsPerEvolution:
             print(
-                f"  [MAX ATTEMPTS REACHED] Retaining current best model ({self.production_model.name}, "
-                f"mean_score={self.best_benchmark_score:.2f}) after {self.attempts_in_current_cycle} attempts."
+                f"  [MAX ATTEMPTS REACHED] Retaining current best model ({self.productionModel.name}, "
+                f"mean_score={self.bestBenchmarkScore:.2f}) after {self.attemptsInCurrentCycle} attempts."
             )
             self.regress()
             self.needToEvolve = False
-            self.attempts_in_current_cycle = 0
-            self.evolutions_completed += 1
+            self.attemptsInCurrentCycle = 0
+            self.evolutionsCompleted += 1
             return True
 
         return False
 
     def regress(self) -> None:
         """Roll back the failed candidate mutation to the previous production model."""
-        self.production_model = self.backup_model.clone()
-        self.candidate_model = None
-        self.total_rollbacks += 1
+        self.productionModel = self.backupModel.clone()
+        self.candidateModel = None
+        self.totalRollbacks += 1

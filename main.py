@@ -6,15 +6,15 @@ from game import SidescrollerGame, TkinterGameViewer
 
 def __main__(
     benchmark_episodes: int = 30,
-    max_evolutions: int = 5,
+    max_evolutions: int = 25,
     watch: bool = False,
 ):
     model = harness.evoHarness(
-        benchmark_episodes=benchmark_episodes,
-        max_evolutions=max_evolutions,
+        benchmarkEpisodes=benchmark_episodes,
+        maxEvolutions=max_evolutions,
     )
 
-    print(model.baseline_summary.format_report())
+    print(model.baselineSummary.format_report())
     print("\n--- Starting Production Model Evolution Loop ---")
 
     while not model.run():
@@ -24,15 +24,15 @@ def __main__(
             model.evolve()
 
     print("\n=== Evolution Summary vs. Random Baseline Floor ===")
-    print(f"  Random Baseline Floor Mean Score : {model.baseline_floor_score:.2f}")
-    print(f"  Final Production Model           : {model.production_model.name}")
-    print(f"  Final Benchmark Mean Score       : {model.best_benchmark_score:.2f}")
+    print(f"  Random Baseline Floor Mean Score : {model.baselineFloorScore:.2f}")
+    print(f"  Final Production Model           : {model.productionModel.name}")
+    print(f"  Final Benchmark Mean Score       : {model.bestBenchmarkScore:.2f}")
     improvement_pct = (
-        ((model.best_benchmark_score - model.baseline_floor_score) / max(1e-6, model.baseline_floor_score))
+        ((model.bestBenchmarkScore - model.baselineFloorScore) / max(1e-6, model.baselineFloorScore))
         * 100.0
     )
     print(f"  Improvement Over Random Floor    : +{improvement_pct:.1f}%")
-    print(f"  Total Rollbacks (Regressions)    : {model.total_rollbacks}")
+    print(f"  Total Rollbacks (Regressions)    : {model.totalRollbacks}")
 
     if watch:
         viewer = TkinterGameViewer(SidescrollerGame(), model=model.production_model, human_mode=False)
